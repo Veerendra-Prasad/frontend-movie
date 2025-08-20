@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ToastModal from "../components/ToastModal";
-import { Login } from "../api/api";
+import { LoginUser } from "../api/api";
 
 export default function Login() {
   const { login } = useAuth();
@@ -16,11 +16,16 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await Login(form, login);
-    if(response)
-    // // Simulate API call
-    // const userData = { username: "DemoUser", email: form.email, avatarUrl: "" };
-    // login(userData, "fake-jwt-token");
+    if(!form.email || !form.password) {
+      setToastMessage("Please fill in all fields");
+      return;
+    }
+    const response = await LoginUser(form, login);
+    if(response.status != 200){
+      setToastMessage(response.message);
+      return;
+    }
+    setToastMessage(response.message);
     navigate("/user");
   };
 

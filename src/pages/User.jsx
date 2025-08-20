@@ -1,20 +1,17 @@
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
-  const {logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // if (!user) {
-  //   navigate("/login");
-  //   return null;
-  // }
-
-  const user = {
-    username: "JohnDoe",
-    email: " ",
-    avatarUrl: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff",
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return null;
+    }
+  }, []);
 
   const DEFAULT_AVATAR =
     "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
@@ -24,7 +21,7 @@ export default function Profile() {
       <div className="bg-white p-6 rounded-xl shadow-md flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* Avatar */}
         <img
-          src={user.avatarUrl || DEFAULT_AVATAR}
+          src={DEFAULT_AVATAR}
           alt="User"
           className="w-24 h-24 rounded-full border"
         />

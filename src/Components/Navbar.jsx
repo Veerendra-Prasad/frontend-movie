@@ -1,4 +1,3 @@
-// components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { UserCircle, Menu, X } from "lucide-react";
@@ -14,7 +13,7 @@ export default function Navbar() {
 
   const handleUserClick = () => {
     if (user) {
-      navigate("/profile");
+      navigate("/user");
     } else {
       navigate("/login");
     }

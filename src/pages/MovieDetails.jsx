@@ -19,9 +19,9 @@ export default function MovieDetails() {
   useEffect(() => {
     const fetchMovie = async () => {
       const movieData = await getMovieById(id);
-      if (movieData) {
-        setMovie(movieData);
-        setComments(movieData.reviews || []);
+      if (movieData.message) {
+        setMovie(movieData.message);
+        setComments(movieData.message.reviews || []);
       } else {
         setToastMessage("Movie not found");
         setComments([]);

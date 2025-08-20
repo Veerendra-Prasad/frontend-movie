@@ -1,24 +1,25 @@
-import ToastModal from "../components/ToastModal";
 import api from "../config/api.config";
 import axios from "axios";
 
-const Login = async (userData, login) => {
+const LoginUser = async (userData, login) => {
   try {
     const response = await axios.post(`${api.getUri()}/auth/login`, userData);
+    console.log("Response :" + response);
     if (response.status === 200) {
-      const { token, userData } = response.data;
-      login(userData, token);
-      return "logged in";
+      const { token, username, email, id, likedMoviesIds } = response.data;
+      login(username, email, id,likedMoviesIds, token);
+      return { status: 200, message: "logged in" };
     } else {
-      return response.data.message;
+      return { status: 400, message: response.data.message };
     }
   } catch (error) {
-    return error.message;
+    return { status: 500, message: error.message };
   }
 };
 
 const Logout = async (logout) => {
   logout();
+  return { status: 200, message: "Logged out successfully" };
 };
 
 const getMovies = async (pageNum = 0) => {
@@ -27,11 +28,11 @@ const getMovies = async (pageNum = 0) => {
       `${api.getUri()}/api/v1/movies?page=${pageNum}&size=10`
     );
     if (response.status !== 200) {
-      return "Failed to fetch movies";
+      return { status: 400, message: "Failed to fetch movies" };
     }
-    return response.data;
+    return { status: 200, message: response.data };
   } catch (error) {
-    return error.message;
+    return { status: 500, message: error.message };
   }
 };
 
@@ -39,11 +40,11 @@ const getMovieById = async (id) => {
   try {
     const response = await axios.get(`${api.getUri()}/api/v1/movies/${id}`);
     if (response.status !== 200) {
-      return "Failed to fetch movie details";
+      return { status: 400, message: "Failed to fetch movie details" };
     }
-    return response.data;
+    return { status: 200, message: response.data };
   } catch (error) {
-    return  error.message;
+    return { status: 500, message: error.message };
   }
 };
 
@@ -54,13 +55,13 @@ const createReview = async (movieId, user, comment) => {
       { comment }
     );
     if (response.status === 200) {
-      return response.data;
+      return { status: 200, message: response.data };
     } else {
-      return  response.data.message;
+      return { status: 400, message: response.data.message };
     }
   } catch (error) {
-    return error.message;
+    return { status: 500, message: error.message };
   }
 };
 
-export { Login, Logout, getMovies, getMovieById, createReview };
+export { LoginUser, Logout, getMovies, getMovieById, createReview };

@@ -16,7 +16,7 @@ function Home() {
     async function fetchMovies() {
       const result = await getMovies(page);
       if (result) {
-        const { content, totalPages } = result;
+        const { content, totalPages } = result.message;
         setMovies(content);
         setTotalPages(totalPages);
       } else {
