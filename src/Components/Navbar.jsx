@@ -66,7 +66,7 @@ export default function Navbar() {
             {user ? (
               <>
                 <img
-                  src={user.avatarUrl || "https://i.pravatar.cc/40"}
+                  src={user.avatarUrl || DEFAULT_AVATAR}
                   alt="User"
                   className="w-8 h-8 rounded-full border border-gray-300"
                 />

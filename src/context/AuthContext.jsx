@@ -19,8 +19,16 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
   };
 
+  const setLikedMovies = (updatedUser) => {
+    if(!user){
+      return;
+    }
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, setLikedMovies }}>
       {children}
     </AuthContext.Provider>
   );

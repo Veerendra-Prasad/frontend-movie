@@ -1,4 +1,3 @@
-// pages/Signup.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -18,7 +17,7 @@ export default function Signup() {
     // Fake user data (replace with API call)
     const userData = { username: form.username, email: form.email, avatarUrl: "" };
     login(userData, "fake-jwt-token");
-    navigate("/profile");
+    navigate("/user");
   };
 
   return (

@@ -4,15 +4,15 @@ import Button from "../components/Button";
 import CommentCard from "../components/CommentCard";
 import ToastModal from "../components/ToastModal";
 import { useAuth } from "../context/AuthContext";
-import { getMovieById, createReview } from "../api/api";
+import { getMovieById, createReview, LikedMovies } from "../api/api";
 
 export default function MovieDetails() {
-  const { user } = useAuth();
+  const { user, setLikedMovies } = useAuth();
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(user?.likedMovies?.includes(id) || false);
   const [showFullPlot, setShowFullPlot] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -37,10 +37,11 @@ export default function MovieDetails() {
       return;
     }
     const response = await createReview(id, user, comment);
-    if (response) {
+    if (response === 200) {
       setComments([...comments, comment]);
       setToastMessage("Comment added successfully!");
     }
+    setToastMessage(response.message);
   };
 
   const handleAddComment = () => {
@@ -59,6 +60,8 @@ export default function MovieDetails() {
       return;
     } else {
       setLiked(!liked);
+      LikedMovies(id,user ,setLikedMovies); 
+      // send an api request to update the liked movies in the backend
     }
   };
 
