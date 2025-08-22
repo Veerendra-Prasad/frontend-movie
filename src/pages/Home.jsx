@@ -1,28 +1,35 @@
-import axios from "axios";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Loading from "../components/Loading";
+import RecommendedMovies from "../components/RecommendedMovies";
+import { getMovies } from "../api/api";
+import ToastModal from "../components/ToastModal";
 
 function Home() {
   const [movies, setMovies] = useState([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
-    getMovies(page);
+    async function fetchMovies() {
+      const result = await getMovies(page);
+      if (result) {
+        const { content, totalPages } = result.message;
+        setMovies(content);
+        setTotalPages(totalPages);
+      } else {
+        setMovies([]);
+        setTotalPages(1);
+        setToastMessage("Failed to fetch movies");
+      }
+    }
+    fetchMovies();
   }, [page]);
 
-  const getMovies = async (pageNum = 0) => {
-    const response = await axios.get(
-      `http://localhost:8080/api/v1/movies?page=${pageNum}&size=10`
-    );
-    setMovies(response.data.content);
-    setTotalPages(response.data.totalPages);
-  };
-
-  const filteredMovies = movies.filter((m) =>
-    m.title.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredMovies = (movies) =>
+    movies.filter((m) => m.title.toLowerCase().includes(query.toLowerCase()));
 
   const handlePrev = () => {
     if (page > 0) setPage(page - 1);
@@ -33,34 +40,42 @@ function Home() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">  
+
+      {/* Discover Movies */}
+
       <h1 className="text-3xl font-bold mb-6">Discover Movies</h1>
 
-      <input
-        type="text"
-        placeholder="Search for a movie..."
-        className="w-full p-3 rounded-xl shadow-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none mb-6"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-
+      <div className="flex items-center mb-6">
+        <input
+          type="text"
+          placeholder="Search for a movie..."
+          className="w-full p-3 rounded-xl shadow-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        {filteredMovies.map((movie) => (
-          <Link
-            key={movie.id}
-            to={`/movie/${movie.id}`}
-            className="bg-white rounded-xl shadow hover:shadow-lg transition p-2 group"
-          >
-            <img
-              src={movie.poster}
-              alt={movie.title}
-              className="rounded-lg w-full h-60 object-cover"
-            />
-            <h2 className="mt-3 text-lg font-semibold group-hover:text-blue-600 transition">
-              {movie.title}
-            </h2>
-          </Link>
-        ))}
+        {movies && movies.length > 0 ? (
+          filteredMovies(movies).map((movie) => (
+            <Link
+              key={movie.id}
+              to={`/movie/${movie.id}`}
+              className="bg-white rounded-xl shadow hover:shadow-lg transition p-2 group"
+            >
+              <img
+                src={movie.poster}
+                alt={movie.title}
+                className="rounded-lg w-full h-60 object-cover object-center"
+              />
+              <h2 className="mt-3 text-lg font-semibold group-hover:text-blue-600 transition">
+                {movie.title}
+              </h2>
+            </Link>
+          ))
+        ) : (
+          <Loading />
+        )}
       </div>
 
       {/* Pagination Controls */}
@@ -83,6 +98,13 @@ function Home() {
           Next
         </button>
       </div>
+      {/* Toast Message */}
+      {toastMessage && (
+        <ToastModal
+          message={toastMessage}
+          onClose={() => setToastMessage("")}
+        />
+      )}
     </div>
   );
 }

@@ -1,37 +1,77 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-import Button from "../Components/Button";
+import Button from "../components/Button";
+import CommentCard from "../components/CommentCard";
+import ToastModal from "../components/ToastModal";
+import { useAuth } from "../context/AuthContext";
+import { getMovieById, createReview, LikedMovies } from "../api/api";
+import Loading from "../components/Loading";
 
 export default function MovieDetails() {
+  const { user, setLikedMovies } = useAuth();
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(user?.likedMovies?.includes(id) || false);
   const [showFullPlot, setShowFullPlot] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMovie = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/v1/movies/${id}`);
-        setMovie(response.data);
-      } catch (error) {
+      const movieData = await getMovieById(id);
+      if (movieData.message) {
+        setMovie(movieData.message);
+        setComments(movieData.message.reviews || []);
+      } else {
+        setToastMessage("Movie not found");
+        setComments([]);
         setMovie(null);
       }
+      setLoading(false);
     };
     fetchMovie();
-    setComments([]);
   }, [id]);
+
+  const sendComment = async (comment) => {
+    if (!user) {
+      setToastMessage("you need to be logged in to comment");
+      return;
+    }
+    const response = await createReview(id, user, comment);
+    if (response.status === 200) {
+      setComments([...comments, response.message]);
+      setToastMessage("Comment added successfully!");
+      return;
+    }
+    setToastMessage("Comment not added, please try again");
+  };
 
   const handleAddComment = () => {
     if (newComment.trim() !== "") {
-      setComments([...comments, newComment]);
+      sendComment(newComment);
       setNewComment("");
-    } else{
-      alert("Comment cannot be empty");
+    } else {
+      setToastMessage("Comment cannot be empty!");
+      return;
     }
   };
+
+  const handleLiked = () => {
+    if (!user) {
+      setToastMessage("You need to be logged in to like a movie.");
+      return;
+    } else {
+      setLiked(!liked);
+      LikedMovies(id, user, setLikedMovies);
+      // send an api request to update the liked movies in the backend
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -46,14 +86,15 @@ export default function MovieDetails() {
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-2">{movie.title}</h1>
               <div className="flex flex-wrap gap-2 mb-3">
-                {movie.genres && movie.genres.map((genre) => (
-                  <span
-                    key={genre}
-                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
-                  >
-                    {genre}
-                  </span>
-                ))}
+                {movie.genres &&
+                  movie.genres.map((genre) => (
+                    <span
+                      key={genre}
+                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
+                    >
+                      {genre}
+                    </span>
+                  ))}
               </div>
               {/* IMDb Rating Element */}
               <div className="flex items-center mb-2 gap-3">
@@ -65,14 +106,15 @@ export default function MovieDetails() {
               </div>
               {/* Other Ratings */}
               <div className="flex gap-2 mb-2">
-                {movie.rating && movie.rating.map((r, i) => (
-                  <span
-                    key={i}
-                    className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs"
-                  >
-                    {r.Source}: {r.Value}
-                  </span>
-                ))}
+                {movie.rating &&
+                  movie.rating.map((r, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs"
+                    >
+                      {r.Source}: {r.Value}
+                    </span>
+                  ))}
               </div>
               {/* Plot with Read More */}
               <p className="text-gray-700 mb-4">
@@ -89,7 +131,8 @@ export default function MovieDetails() {
                 )}
               </p>
               <div className="mb-2 text-sm text-gray-600">
-                <span className="font-semibold">Director:</span> {movie.director}
+                <span className="font-semibold">Director:</span>{" "}
+                {movie.director}
               </div>
               <div className="mb-2 text-sm text-gray-600">
                 <span className="font-semibold">Writer:</span> {movie.writer}
@@ -101,16 +144,19 @@ export default function MovieDetails() {
                 <span className="font-semibold">Runtime:</span> {movie.runtime}
               </div>
               <div className="mb-2 text-sm text-gray-600">
-                <span className="font-semibold">Language:</span> {movie.language}
+                <span className="font-semibold">Language:</span>{" "}
+                {movie.language}
               </div>
               <div className="mb-2 text-sm text-gray-600">
-                <span className="font-semibold">Box Office:</span> {movie.boxOffice}
+                <span className="font-semibold">Box Office:</span>{" "}
+                {movie.boxOffice}
               </div>
               <div className="mb-4 text-sm text-gray-600">
-                <span className="font-semibold">Release Date:</span> {movie.releaseDate}
+                <span className="font-semibold">Release Date:</span>{" "}
+                {movie.releaseDate}
               </div>
               <button
-                onClick={() => setLiked(!liked)}
+                onClick={() => handleLiked()}
                 className={`px-5 py-2 rounded-xl text-white font-semibold transition transform hover:scale-105 ${
                   liked
                     ? "bg-gradient-to-r from-pink-500 to-red-500"
@@ -125,16 +171,15 @@ export default function MovieDetails() {
           {/* Comments Section */}
           <div className="mt-10">
             <h2 className="text-2xl font-semibold mb-4">Comments</h2>
-            <div className="space-y-3 mb-6">
-              {comments.map((c, i) => (
-                <div
-                  key={i}
-                  className="bg-white shadow p-3 rounded-lg border border-gray-200"
-                >
-                  {c}
-                </div>
-              ))}
-            </div>
+            {comments.length > 0 ? (
+              comments.map((review, index) => (
+                <CommentCard key={index} review={review} />
+              ))
+            ) : (
+              <p className="text-gray-500">
+                No comments yet. Be the first to comment!
+              </p>
+            )}
 
             <div className="flex gap-3">
               <input
@@ -147,6 +192,12 @@ export default function MovieDetails() {
               <Button handleAddComment={handleAddComment} />
             </div>
           </div>
+          {toastMessage && (
+            <ToastModal
+              message={toastMessage}
+              onClose={() => setToastMessage("")}
+            />
+          )}
         </>
       ) : (
         <div className="text-center text-gray-500">Movie not found.</div>
