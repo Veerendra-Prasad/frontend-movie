@@ -5,6 +5,7 @@ import CommentCard from "../components/CommentCard";
 import ToastModal from "../components/ToastModal";
 import { useAuth } from "../context/AuthContext";
 import { getMovieById, createReview, LikedMovies } from "../api/api";
+import Loading from "../components/Loading";
 
 export default function MovieDetails() {
   const { user, setLikedMovies } = useAuth();
@@ -15,6 +16,7 @@ export default function MovieDetails() {
   const [liked, setLiked] = useState(user?.likedMovies?.includes(id) || false);
   const [showFullPlot, setShowFullPlot] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -27,6 +29,7 @@ export default function MovieDetails() {
         setComments([]);
         setMovie(null);
       }
+      setLoading(false);
     };
     fetchMovie();
   }, [id]);
@@ -37,11 +40,12 @@ export default function MovieDetails() {
       return;
     }
     const response = await createReview(id, user, comment);
-    if (response === 200) {
-      setComments([...comments, comment]);
+    if (response.status === 200) {
+      setComments([...comments, response.message]);
       setToastMessage("Comment added successfully!");
+      return;
     }
-    setToastMessage(response.message);
+    setToastMessage("Comment not added, please try again");
   };
 
   const handleAddComment = () => {
@@ -60,10 +64,14 @@ export default function MovieDetails() {
       return;
     } else {
       setLiked(!liked);
-      LikedMovies(id,user ,setLikedMovies); 
+      LikedMovies(id, user, setLikedMovies);
       // send an api request to update the liked movies in the backend
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">

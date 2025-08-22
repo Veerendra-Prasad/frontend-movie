@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { UserCircle, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -30,6 +31,11 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
+            {user && (
+              <Link to="/recommend" className="text-white hover:underline">
+                Recommendation
+              </Link>
+            )}
             <button onClick={handleUserClick} className="flex items-center">
               {user ? (
                 <img
@@ -59,6 +65,15 @@ export default function Navbar() {
       {/* Mobile Menu Dropdown */}
       {isOpen && (
         <div className="md:hidden px-4 pb-4 space-y-3 bg-gray-800">
+          {user && (
+            <Link
+              to="/recommend"
+              className="block text-white hover:underline"
+              onClick={() => setIsOpen(false)}
+            >
+              Recommendation
+            </Link>
+          )}
           <button
             onClick={handleUserClick}
             className="flex items-center gap-2 pt-2"

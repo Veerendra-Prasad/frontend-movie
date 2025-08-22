@@ -1,24 +1,49 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import ToastModal from "../components/ToastModal";
+import { isValidEmail, isValidPassword } from "../utils/validation";
+import { signin } from "../api/api";
+import Loading from "../components/Loading";
 
 export default function Signup() {
-  const { login } = useAuth();
   const navigate = useNavigate();
-
   const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [toastMessage, setToastMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Fake user data (replace with API call)
-    const userData = { username: form.username, email: form.email, avatarUrl: "" };
-    login(userData, "fake-jwt-token");
-    navigate("/user");
+    if (!isValidEmail(form.email) || form.email === null) {
+      setToastMessage("Please enter a valid email address");
+      return;
+    }
+    if (!isValidPassword(form.password) || form.password === null) {
+      setToastMessage("Please enter a valid password");
+      return;
+    }
+    if (form.username === null) {
+      setToastMessage("Please enter a valid username");
+      return;
+    }
+    setLoading(true);
+    const response = await signin(form.username, form.email, form.password);
+    if (response.status !== 200) {
+      setToastMessage(response.message);
+      setLoading(false);
+      return;
+    }
+    setToastMessage("User registered successfully");
+    setLoading(false);
+    navigate("/verify", { state: { email: form.email } });
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
@@ -66,6 +91,12 @@ export default function Signup() {
           </Link>
         </p>
       </div>
+      {toastMessage && (
+        <ToastModal
+          message={toastMessage}
+          onClose={() => setToastMessage("")}
+        />
+      )}
     </div>
   );
 }

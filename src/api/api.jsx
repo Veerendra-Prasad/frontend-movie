@@ -4,7 +4,6 @@ import axios from "axios";
 const LoginUser = async (userData, login) => {
   try {
     const response = await axios.post(`${API.getUri()}/auth/login`, userData);
-    console.log("Response :" + response);
     if (response.status === 200) {
       const { token, username, email, id, likedMoviesIds } = response.data;
       login(username, email, id, likedMoviesIds, token);
@@ -13,7 +12,8 @@ const LoginUser = async (userData, login) => {
       return { status: 400, message: response.data.message };
     }
   } catch (error) {
-    return { status: 500, message: error.message };
+    console.log(error);
+    return { status: 500, message: error.response.data };
   }
 };
 
@@ -32,7 +32,7 @@ const getMovies = async (pageNum = 0) => {
     }
     return { status: 200, message: response.data };
   } catch (error) {
-    return { status: 500, message: error.message };
+    return { status: 500, message: error.response.data };
   }
 };
 
@@ -44,15 +44,15 @@ const getMovieById = async (id) => {
     }
     return { status: 200, message: response.data };
   } catch (error) {
-    return { status: 500, message: error.message };
+    return { status: 500, message: error.response.data };
   }
 };
 
-const createReview = async (movieId, user, comment) => {
+const createReview = async (movieId, user, body) => {
   try {
     const response = await API.post(
       `${API.getUri()}/api/v1/reviews/${movieId}/${user.id}/create`,
-      { comment }
+      { body }
     );
     if (response.status === 200) {
       return { status: 200, message: response.data };
@@ -60,7 +60,7 @@ const createReview = async (movieId, user, comment) => {
       return { status: 400, message: response.data.message };
     }
   } catch (error) {
-    return { status: 500, message: error.message };
+    return { status: 500, message: error.response.data };
   }
 };
 
@@ -71,19 +71,19 @@ const LikedMovies = async (movieId, user, setLikedMovies) => {
     : likeMovie(user.likedMovies, movieId);
   updatedUser.likedMovies = updatedLikedMovies;
   setLikedMovies(updatedUser);
-  // try {
-  //   const response = await API.post(
-  //     `${API.getUri()}/api/v1/users/${user.id}/likedMovies`,
-  //     { updatedLikedMovies }
-  //   );
-  //   if (response.status === 200) {
-  //     return { status: 200, message: "Liked movies updated successfully" };
-  //   } else {
-  //     return { status: 400, message: response.data.message };
-  //   }
-  // } catch (error) {
-  //   return { status: 500, message: error.message };
-  // }
+  try {
+    const response = await API.post(
+      `${API.getUri()}/users/likedMovies`,
+      [ ... updatedLikedMovies ]
+    );
+    if (response.status === 200) {
+      return { status: 200, message: "Liked movies updated successfully" };
+    } else {
+      return { status: 400, message: response.data.message };
+    }
+  } catch (error) {
+    return { status: 500, message: error.response.data };
+  }
 };
 
 const likeMovie = (likedMovies, movieId) => {
@@ -115,9 +115,42 @@ const getRecommendedMovies = async (user) => {
         return { status: 400, message: "Failed to fetch recommended movies" };
       }
   } catch (error) {
-    return { status: 500, message: error.message };
+    return { status: 500, message: error.response.data };
   }
 };
+
+const getVerified = async (email, code) => {
+  try{
+    const response = await API.post(
+      `${API.getUri()}/auth/verify`,
+      {email, verificationCode : code}
+    );
+    if(response.status === 200){
+      return { status: 200, message: "User verified successfully" };
+    } else {
+      return { status: 400, message: response.data.message };
+    }
+  } catch (error){
+    return { status: 500, message: error.response.data };
+  }
+}
+
+const signin = async (username, email, password) => {
+  try {
+    const response = await axios.post(`${API.getUri()}/auth/signup`, {
+      username,
+      email,
+      password,
+    });
+    if (response.status === 200) {
+      return { status: 200, message: "User registered successfully" };
+    } else {
+      return { status: 400, message: response.data.message };
+    }
+  } catch (error) {
+    return { status: 500, message: error.response.data };
+  }
+}
 
 export {
   LoginUser,
@@ -127,4 +160,6 @@ export {
   createReview,
   LikedMovies,
   getRecommendedMovies,
+  getVerified,
+  signin
 };

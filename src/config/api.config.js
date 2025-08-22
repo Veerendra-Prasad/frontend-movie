@@ -1,7 +1,8 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 });
 
 API.interceptors.request.use((config) => {
@@ -24,7 +25,7 @@ API.interceptors.response.use(
       try {
         // Call backend refresh endpoint (cookie auto-sent)
         const res = await axios.post(
-          `${API.getUri()}/api/auth/refresh`,
+          `${API.getUri()}/auth/refresh`,
           {},
           { withCredentials: true }
         );
@@ -37,13 +38,12 @@ API.interceptors.response.use(
         // Update header and retry original request
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return API(originalRequest);
-
       } catch (refreshError) {
         console.error("Refresh token failed:", refreshError);
         // Optional: logout user
-        localStorage.removeItem("token");
-        localStorage.removeItem("user")
-        window.location.href = "/login";
+        // localStorage.removeItem("token");
+        // localStorage.removeItem("user")
+        // window.location.href = "/login";
       }
     }
 

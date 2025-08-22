@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ToastModal from "../components/ToastModal";
 import { LoginUser } from "../api/api";
+import { isValidEmail } from "../utils/validation";
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,12 +21,16 @@ export default function Login() {
       setToastMessage("Please fill in all fields");
       return;
     }
+    if(!isValidEmail(form.email)){
+      setToastMessage("Please enter a valid email address");
+      return;
+    }
     const response = await LoginUser(form, login);
     if(response.status != 200){
       setToastMessage(response.message);
       return;
     }
-    setToastMessage(response.message);
+    setToastMessage(response.message || "Login successful");
     navigate("/user");
   };
 
