@@ -29,14 +29,14 @@ export default function Profile() {
         {/* Info */}
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold">{user.username}</h2>
-          <p className="text-gray-600">{user.email}</p>
+          <p className="text-gray-600 text-sm">{user.email}</p>
 
           <button
             onClick={() => {
               logout();
               navigate("/");
             }}
-            className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
+            className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg w-[90%] sm:w-auto"
           >
             Logout
           </button>

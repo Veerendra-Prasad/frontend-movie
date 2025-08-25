@@ -39,7 +39,7 @@ export default function RecommendedMovies() {
     <div className="mt-8">
       <h2 className="text-xl font-bold mb-4">Recommended for You</h2>
       {loading || movies.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {filteredMovies(movies).map((movie, idx) => (
             <Link key={idx} to={`/movie/${movie.id}`}>
               <div
