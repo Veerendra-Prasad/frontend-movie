@@ -55,7 +55,7 @@ function Home() {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 gap-6">
         {movies && movies.length > 0 ? (
           filteredMovies(movies).map((movie) => (
             <Link

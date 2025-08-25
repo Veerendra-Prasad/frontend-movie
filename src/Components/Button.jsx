@@ -14,9 +14,9 @@ export default function Button({ handleAddComment }) {
   return (
     <button
       onClick={handleClick}
-      className="relative flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl font-semibold overflow-hidden"
+      className="relative flex justify-center items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-xl font-semibold overflow-hidden"
     >
-      <span>Post</span>
+      <span className="hidden sm:block">Post</span>
 
       {/* Animate Presence handles plane flying away */}
       <AnimatePresence>
